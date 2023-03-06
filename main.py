@@ -1,4 +1,4 @@
-import microservice.definition as definition
+import microservice.microservice as microservice
 import configparser
 import os
 

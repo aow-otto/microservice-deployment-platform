@@ -1,3 +1,6 @@
+[global]
+name = master
+
 [count]
 slave = 2
 microservice = 3
@@ -8,10 +11,10 @@ slave01 = 127.0.0.2
 slave02 = 127.0.0.3
 
 [microservice1]
-name = "test1"
+name = test1
 
 [microservice2]
-name = "test2"
+name = test2
 
 [microservice3]
-name = "test3"
+name = test3
