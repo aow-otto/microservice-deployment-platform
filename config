@@ -12,9 +12,21 @@ slave02 = 127.0.0.3
 
 [microservice1]
 name = test1
+imagePath = hello-world
+dependency = 
+inputFormat = json
+outputFormat = json
 
 [microservice2]
 name = test2
+imagePath = hello-world
+dependency = test1
+inputFormat = json
+outputFormat = json
 
 [microservice3]
 name = test3
+imagePath = hello-world
+dependency = test1, test2
+inputFormat = json
+outputFormat = json

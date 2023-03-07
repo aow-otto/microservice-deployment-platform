@@ -1,27 +1,29 @@
 from loguru import logger
-import docker
 
 
 class Microservice:
 
-    def __init__(self, client, repository, tag=None) -> None:
+    def __init__(self, client, repository, dependency) -> None:
         self.client = client
         self.repository = repository
-        self.tag = tag
+        self.dependency = dependency
         self.parents = list()
         self.children = list()
-        logger.info(f"Microservice '{self.repository}' initialized successfully.")
+        logger.info(
+            f"Microservice '{self.repository}' initialized successfully.")
 
     def __del__(self):
-        self.container.logs() # save into sql
+        self.container.logs()  # save into sql
 
     def pullImage(self):
         self.image = self.client.images.pull(self.repository, self.tag)
-        logger.info(f"Microservice '{self.repository}' pulled image '{self.image}' successfully.")
+        logger.info(
+            f"Microservice '{self.repository}' pulled image '{self.image}' successfully.")
 
     def removeImage(self):
         self.client.images.remove(self.image)
-        logger.info(f"Microservice '{self.repository}' removed image '{self.image}' successfully.")
+        logger.info(
+            f"Microservice '{self.repository}' removed image '{self.image}' successfully.")
 
     def run(self):
         self.container = self.client.containers.run(self.image)
