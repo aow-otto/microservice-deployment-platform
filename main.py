@@ -1,7 +1,11 @@
-import microservice.microservice as microservice
+from microservice.microservice import Microservice
+from status.microservice_status import StatusServer
+from log.servicelogger import ServiceLogger
 import log.logger as log
 import configparser
 import os
+from microservice.tools import ServiceTool
+import docker
 
 
 def getConfig(section, option):
@@ -25,11 +29,10 @@ def parseMicroservice(name):
 
 
 if __name__ == "__main__":
-    # m = microservice.Microservice("test", "path")
 
     # initialize logger
     logger = log.Logger("main")
-    logger.info("microservice deployment platform start")
+    logger.info("Microservice deployment platform started")
 
     # get ip of master and all the slaves
     logger_getip = logger.with_subcomponent("get ip")
@@ -41,4 +44,27 @@ if __name__ == "__main__":
         logger_getip.info(
             "ip of " + "slave{:02d}".format(i+1) + " is " + slave_ip[i])
 
-    logger.info("microservice deployment platform stop")
+    # test microservice
+    # create a new microservice
+    microservice = Microservice(ServiceTool(docker.from_env(), logger.with_component(
+        "microservice"), ServiceLogger(), None, StatusServer()), "hello-world", dependency=None, input_data=None)
+
+    # pull the image of the microservice
+    microservice.pullImage()
+
+    # run the microservice
+    microservice.run()
+
+    # get result of the microservice
+    output = microservice.get_output()
+    # print(output)
+
+    # terminate the microservice
+
+    # remove the image of the microservice
+    microservice.remove_image()
+
+    # delete the microservice
+    del microservice
+
+    logger.info("Microservice deployment platform stopped")
