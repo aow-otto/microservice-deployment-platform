@@ -2,13 +2,13 @@ import sys
 import loguru
 import pymysql
 import configparser
-from typing import Type, TypeVar
+from typing import TypeVar
 
 # Define a new logger which will print on terminal and save into database.
 
 
 class Logger:
-    def __init__(self, component: str = '', subcomponent: str = '') -> None:
+    def __init__(self, component: str = '', subcomponent: str = ''):
         self.logger = loguru.logger
         self.cfg = configparser.ConfigParser()
         self.cfg.read("config.ini")
