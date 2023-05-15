@@ -7,12 +7,14 @@ from enum import Enum
 
 class MicroserviceStatus(Enum):
     CREATING = "creating"
+    CREATED = "created"
     PULLING = "pulling"
     PENDING = "pending"
     RUNNING = "running"
     FINISHED = "finished"       # running finished
     REMOVING = "removing"       # removing image
     MIGRATING = "migrating"     # migrating to another server
+    UNPACKING = "unpacking"     # unpacking container file
     TERMINATED = "terminated"   # terminated by user
     STOPPED = "stopped"         # running stopped
 
