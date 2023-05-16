@@ -10,9 +10,10 @@ class Microservice:
 
     def __init__(
             self,
+            name: str,
             servicetool: ServiceTool,
             repository: str,
-            dependency: list[str],
+            dependency: list[str],  # not realized
             input_data: str,
             from_file: bool = False,
             container_tar: str = None,
@@ -20,8 +21,9 @@ class Microservice:
             cpu: int = 2,  # cores
             timeout: int = 600,  # seconds
     ):
+        self.name = name
         self.statusserver = servicetool.statusserver
-        self.statusserver.save_status(repository, MicroserviceStatus.CREATING)
+        self.statusserver.save_status(self.name, MicroserviceStatus.CREATING)
         self.client = servicetool.dockerclient
         self.servicelogger = servicetool.servicelogger
         self.repository = repository
@@ -30,7 +32,7 @@ class Microservice:
         self.from_file = from_file
         self.container_tar = container_tar
         self.logger = servicetool.systemlogger.with_subcomponent(
-            self.repository)
+            self.name)
         self.parents = list()
         self.children = list()
 
@@ -38,18 +40,16 @@ class Microservice:
         self.cpu = cpu
         self.timeout = timeout
 
-        self.statusserver.save_status(repository, MicroserviceStatus.CREATED)
+        self.statusserver.save_status(self.name, MicroserviceStatus.CREATED)
         self.logger.info(
-            f"Microservice '{self.repository}' initialized successfully")
+            f"Microservice '{self.name}' initialized successfully")
 
-    def __del__(self):
-        self.statusserver.save_status(
-            self.repository, MicroserviceStatus.TERMINATED)
-        self.logger.info(f"Microservice '{self.repository}' terminated")
+    # def __del__(self):
+    #     self.terminate()
 
     def pull_image(self):
         self.statusserver.save_status(
-            self.repository, MicroserviceStatus.PULLING)
+            self.name, MicroserviceStatus.PULLING)
 
         if not self.from_file:
             self.image = self.client.images.pull(self.repository)
@@ -57,27 +57,26 @@ class Microservice:
             self.__unpack_tar()
 
         self.logger.info(
-            f"Microservice '{self.repository}' pulled image '{self.image}' successfully")
+            f"Microservice '{self.name}' pulled image '{self.image}' from '{self.repository}' successfully")
 
     def remove_image(self):
         self.statusserver.save_status(
-            self.repository, MicroserviceStatus.REMOVING)
+            self.name, MicroserviceStatus.REMOVING)
         self.client.images.remove(self.repository)
         self.logger.info(
-            f"Microservice '{self.repository}' removed image '{self.image}' successfully")
+            f"Microservice '{self.name}' removed image '{self.image}' successfully")
 
     def run(self):
         self.statusserver.save_status(
-            self.repository, MicroserviceStatus.RUNNING)
-        self.logger.info(f"Microservice '{self.repository}' running")
+            self.name, MicroserviceStatus.RUNNING)
+        self.logger.info(f"Microservice '{self.name}' running")
 
         # create container from image and run
         self.container = self.client.containers.run(
             self.image,
-            self.input_data,
+            # self.input_data,
             command="--cpu "+str(self.cpu)+" --timeout " +
             str(self.timeout)+"s --metrics-brief",
-            remove=True,
             detach=True,
         )
 
@@ -86,47 +85,52 @@ class Microservice:
         output = self.container.wait()
         output_str = self.container.logs().decode("utf-8").strip()
         self.statusserver.save_status(
-            self.repository, MicroserviceStatus.FINISHED)
+            self.name, MicroserviceStatus.FINISHED)
         self.logger.info(
-            f"Microservice '{self.repository}' finished successfully")
+            f"Microservice '{self.name}' finished successfully")
 
         # save container logs into database
         logs = self.container.logs().decode("utf-8").strip()
-        self.servicelogger.save_log(self.repository, logs)
+        self.servicelogger.save_log(self.name, logs)
         self.logger.info(
-            f"Microservice '{self.repository}' saved logs successfully")
+            f"Microservice '{self.name}' saved logs successfully")
 
         # remove container
         self.container.remove()
         self.logger.info(
-            f"Microservice '{self.repository}' removed container successfully")
+            f"Microservice '{self.name}' removed container successfully")
 
         return output_str
 
     def stop(self):
         self.container.stop()
         self.statusserver.save_status(
-            self.repository, MicroserviceStatus.STOPPED)
+            self.name, MicroserviceStatus.STOPPED)
         self.logger.info(
-            f"Microservice '{self.repository}' stopped")
+            f"Microservice '{self.name}' stopped")
+
+    def terminate(self):
+        self.statusserver.save_status(
+            self.name, MicroserviceStatus.TERMINATED)
+        self.logger.info(f"Microservice '{self.name}' terminated")
 
     def pack_tar(self) -> str:
         self.statusserver.save_status(
-            self.repository, MicroserviceStatus.MIGRATING)
+            self.name, MicroserviceStatus.MIGRATING)
 
         # export the container to a tar file
-        container_tar = f"{self.repository}.tar"
+        container_tar = f"{self.name}.tar"
         with open(container_tar, "wb") as f:
             for chunk in self.container.export():
                 f.write(chunk)
         self.logger.info(
-            f"Microservice '{self.repository}' packed into tar successfully")
+            f"Microservice '{self.name}' packed into tar successfully")
 
         return container_tar
 
     def __unpack_tar(self):
         self.statusserver.save_status(
-            self.repository, MicroserviceStatus.UNPACKING)
+            self.name, MicroserviceStatus.UNPACKING)
 
         with open(self.container_tar, "rb") as f:
             self.client.images.import_image_from_file(
@@ -136,4 +140,4 @@ class Microservice:
         self.image = self.repository+'-migrated'
 
         self.logger.info(
-            f"Microservice '{self.repository}' unpacked image '{self.image}' successfully")
+            f"Microservice '{self.name}' unpacked image '{self.image}' successfully")

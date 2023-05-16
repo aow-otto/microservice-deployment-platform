@@ -15,8 +15,16 @@ select data from ServiceData where microservice = 'test microservice' order by t
 
 ```sql
 select * from ServiceStatus;
+select status from ServiceStatus where microservice = "test" order by timestamp desc limit 1;
 ```
 
 ```sql
 select * from ServiceLog;
+```
+
+### Basics
+```sql
+use MicroserviceDeploymentPlatform;
+delete from ServiceStatus;
+describe ServiceStatus;
 ```

@@ -6,6 +6,7 @@ import configparser
 import os
 from microservice.tools import ServiceTool
 import docker
+from msplatform.platform import Platform
 
 
 def getConfig(section, option):
@@ -37,34 +38,23 @@ if __name__ == "__main__":
     # get ip of master and all the slaves
     logger_getip = logger.with_subcomponent("get ip")
     master_ip = getConfig("ip", "master")
-    slave_ip = list()
+    slave_ip = getConfig("ip", "slave01")
     logger_getip.info("ip of " + "master" + " is " + master_ip)
-    for i in range(int(getConfig("count", "slave"))):
-        slave_ip.append(getConfig("ip", "slave{:02d}".format(i+1)))
-        logger_getip.info(
-            "ip of " + "slave{:02d}".format(i+1) + " is " + slave_ip[i])
+    logger_getip.info("ip of " + "slave" + " is " + slave_ip)
+    # for i in range(int(getConfig("count", "slave"))):
+    #     slave_ip.append(getConfig("ip", "slave{:02d}".format(i+1)))
+    #     logger_getip.info(
+    #         "ip of " + "slave{:02d}".format(i+1) + " is " + slave_ip[i])
 
     # test microservice
-    # create a new microservice
-    microservice = Microservice(ServiceTool(docker.from_env(), logger.with_component(
-        "microservice"), ServiceLogger(), None, StatusServer()), "hello-world", dependency=None, input_data=None)
+    # create a new platform
+    platform = Platform(logger)
 
-    # pull the image of the microservice
-    microservice.pullImage()
-
-    # run the microservice
-    microservice.run()
-
-    # get result of the microservice
-    output = microservice.get_output()
-    # print(output)
-
-    # terminate the microservice
-
-    # remove the image of the microservice
-    microservice.remove_image()
-
-    # delete the microservice
-    del microservice
+    # add microservice
+    platform.addMicroservice("test1", "containerstack/cpustress", 4, 3)
+    platform.addMicroservice("test2", "containerstack/cpustress", 4, 6)
+    platform.addMicroservice("test3", "containerstack/cpustress", 4, 15)
+    platform.addMicroservice("test4", "containerstack/cpustress", 4, 10)
+    platform.run()
 
     logger.info("Microservice deployment platform stopped")
