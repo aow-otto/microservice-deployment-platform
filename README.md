@@ -2,15 +2,15 @@
 
 **Author:** Ao Wang
 
-**Supervisor:** Yuxiang Liu, Bo Yang
+**Supervisor:** Yuxiang Liu, Prof. Bo Yang
 
 ## Overview
 
-This is a microservice deployment platform running on multiple Ubuntu devices, supporting self-defined microservice deployment algorithms in several simulated IoT environments.
+This is a microservice deployment platform running on multiple Ubuntu devices, supporting self-defined microservice deployment algorithms in simulated IoT environments.
 
 ## Configuration
 
-All the configurations are set in `config` , including device information of master nodes and slave nodes, microservice definition, and algorithm settings.
+All the configurations are set in `config.ini` , including device information of master nodes and slave nodes, microservice definition, and algorithm settings.
 
 ## Microservice
 
@@ -26,6 +26,6 @@ To setup a microservice, the following parameters should be set in `config` :
 
 ## Log
 
-Platform logs are shown on the terminal and saved in mysql database on the `master` device.
+Platform logs are shown on the terminal and saved in the MySQL database on the `master` node.
 
-Microservice logs will only be saved in mysql database on the `master` device.
+Microservice information, including operation logs and data will only be saved in the MySQL database on the `master` node.
